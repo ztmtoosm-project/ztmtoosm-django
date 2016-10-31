@@ -23,5 +23,7 @@ from MySuperApp import views
 urlpatterns = [
     url(r'^$', include('MySuperApp.urls')),
     url(r'^admin/', admin.site.urls),
-    url(r'^line/(\S+)/$', views.view2)
+    url(r'^line/(\S+)/$', views.view3),
+    url(r'^stop/(\S+)/$', views.view4),
+    url(r'^apiline/(\S+)/$', views.view2)
 ]

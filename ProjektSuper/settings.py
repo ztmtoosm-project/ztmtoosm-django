@@ -82,12 +82,12 @@ WSGI_APPLICATION = 'ProjektSuper.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    },
-    'roftl': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR2, 'lol45.db'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'nexty',
+        'USER': 'marcin',
+        'PASSWORD': '',
+        'HOST': '127.0.0.1',
+        'PORT': '',
     }
 }
 
@@ -130,4 +130,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-DATABASE_ROUTERS = ['MySuperApp.AppRouter.ChinookRouter']
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static")
+]

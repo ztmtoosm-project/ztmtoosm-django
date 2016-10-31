@@ -5,6 +5,7 @@ from django.template import loader
 from django.db.models import Q
 from django.http import JsonResponse
 import json
+import functools
 import re
 
 class waw_settings:
@@ -17,12 +18,12 @@ class waw_settings:
         #print (re.match(rr, name).group("lol"))
         return name
 
-def get_tracks(lin):
-    if good_stops2 is False:
-        return None
-    directions = OperatorRoutes.objects.filter(route_id=lin).values_list('direction', flat=True).distinct()
-    for direction in directions:
-        OperatorRoutes.objects.filter(route_id=lin, direction=direction).order_by('stop_on_direction_number')
+#def get_tracks(lin):
+#    if good_stops2 is False:
+#        return None
+#    directions = OperatorRoutes.objects.filter(route_id=lin).values_list('direction', flat=True).distinct()
+#    for direction in directions:
+#        OperatorRoutes.objects.filter(route_id=lin, direction=direction).order_by('stop_on_direction_number')
 
 def get_info(lin):
     tz2 = OsmTree.objects.filter(route_id=lin).values_list('relation_id', flat=True)
@@ -32,13 +33,49 @@ def get_info(lin):
     tz4 = OperatorRoutes.objects.filter(route_id=lin).values_list('stop_id', flat=True).distinct()
     tz5 = len({entry for entry in tz4} - {entry for entry in tz3})
     tz6 = len({entry for entry in tz3} - {entry for entry in tz4})
-    ok = tz5 == 0 and tz6 == 0
-    return {'ok' : ok, 'lin' : lin, 'toadd' : tz5, 'todelete' : tz6, 'master' : tz2a, 'nmaster' : tz2b}
+    ok = 0
+    if (tz5 == 0 and tz6 == 0):
+        ok = ok+2
+    k = {'ok' : ok, 'lin' : lin, 'toadd' : tz5, 'todelete' : tz6, 'master' : tz2a, 'nmaster' : tz2b,
+            'toaddplus' : len(stops_to_add(lin))}
+    return k
 
-def good_stops2(lin, tz3=None):
+def RepresentsInt(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+def sign(x):
+    if(x<0):
+        return -1
+    if(x>0):
+        return 1
+    return 0
+
+def sort1(a):
+    z = ""
+    for num in range(0, 20-len(a['lin'])):
+        z = z + "0"
+    if not RepresentsInt(a['lin']):
+        z = 'A' + z
+    return z + a['lin']
+
+def sort2(a):
+    p = str(a['ok'])
+    z = ""
+    for num in range(0, 20-len(a['lin'])):
+        z = z + "0"
+    if not RepresentsInt(a['lin']):
+        z = 'A' + z
+    return p + z + a['lin']
+
+def good_stops2(lin, tz3=None): #zwraca prawdę, jeśli wszystkie przystanki na trasie linii są w bazie OSM
     if tz3 is None:
         tz3 = SpecialModel.objects.filter(Q(stop_position__isnull=False), ~Q(stop_position=0))
-    tz2 = OperatorRoutes.objects.filter(route_id=lin)
+    tz2 = OperatorRoutes.objects.filter(route_id=lin)\
+        #.values_list('stop_id', flat=True).distinct()
     tz4 = [a.stop_id_1 for a in tz3]
     for ob2 in tz2:
             if(ob2.stop_id in tz4):
@@ -47,15 +84,20 @@ def good_stops2(lin, tz3=None):
                 return False
     return True
 
+def stops_to_add(lin):
+    all_bad_stops = {x for x in SpecialModel.objects.filter(Q(stop_position__isnull=True) | Q(stop_position=0)).values_list('stop_id_1', flat=True).distinct()}
+    line_stops_set = {x for x in OperatorRoutes.objects.filter(route_id=lin).values_list('stop_id', flat=True).distinct()}
+    return (all_bad_stops & line_stops_set)
+
 def good_stops(lin, tz3=None):
     if good_stops2(lin, tz3) is False:
         return None
-    tz = OperatorRoutes.objects.filter(route_id=lin).values_list('direction', flat=True).distinct()
-    if len(tz) is 0:
+    line_direction_list = OperatorRoutes.objects.filter(route_id=lin).values_list('direction', flat=True).distinct()
+    print(line_direction_list)
+    if len(line_direction_list) is 0:
         return None
-
     ret = []
-    for ob1 in tz:
+    for ob1 in line_direction_list:
         ret1 = []
         tz2 = OperatorRoutes.objects.filter(route_id=lin, direction=ob1).order_by('stop_on_direction_number')
         for ob2 in tz2:
@@ -69,7 +111,7 @@ def good_stops(lin, tz3=None):
                 return None
             if tz4.stop_position is None or tz4.stop_position==0:
                 return None
-            ret1.append({'name_operator' : tz3.name, 'name_osm' : tz4.stop_position_name, 'stop_position' : tz4.stop_position, 'stop' : tz4.normal_stop or tz4.stop_position})
+            ret1.append({'ref' : tz3.stop_id, 'name_operator' : tz3.name, 'name_osm' : tz4.stop_position_name, 'stop_position' : tz4.stop_position, 'stop' : tz4.normal_stop or tz4.stop_position})
         ret.append(ret1)
     return ret
 
@@ -89,6 +131,7 @@ def master_json(masters, id, childs):
 
 
 def view2(request, id):
+    print(stops_to_add(id))
     arry1 = good_stops(id)
     if arry1 is None:
          return HttpResponse(status=404)
@@ -140,12 +183,28 @@ def view2(request, id):
     arry2.append(master_json(masters, id, slaves))
     return HttpResponse(json.dumps(arry2, ensure_ascii=False), content_type="application/json; encoding=utf-8")
 
+def view3(request, id):
+    data = {}
+    data['lin'] = id
+    data['operator_data'] = good_stops(id)
+    context = { 'xd' : data}
+    template = loader.get_template('pools/line.html')
+    return HttpResponse(template.render(context, request))
+
+
+def view4(request, id):
+    data = {}
+    data['stop'] = id
+    context = { 'xd' : data}
+    template = loader.get_template('pools/stop.html')
+    return HttpResponse(template.render(context, request))
+
 def index(request):
     tz3 = SpecialModel.objects.filter(Q(stop_position__isnull=False), ~Q(stop_position=0))
     latest_question_list = []
     for val in OperatorRoutes.objects.values_list('route_id', flat=True).distinct():
         latest_question_list.append(get_info(val))
-
+    latest_question_list = sorted(latest_question_list, key=sort2)
     template = loader.get_template('pools/index.html')
     context = {
         'latest_question_list': latest_question_list,

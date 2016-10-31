@@ -10,7 +10,7 @@
       <link href="/static/css/my.css" rel="stylesheet">
   </head>
   <body>
-    <h1>Hello, world!</h1>
+
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -18,17 +18,20 @@
     <script src="/static/js/bootstrap.min.js"></script>
 
     <div class="container">
-    <div class="row">
-    {% for xd in latest_question_list %}
-
-        <div class="col-md-4 line-box">
-                <a class="list-group-item active" href="/line/{{ xd.lin }}">{{ xd.lin }}</a>
-                    <div class="list-group-item">fffffffffffffffff</div>
-                    <div class="list-group-item">Przystanki do dodania do relacji:  <span class="badge"> {{ xd.toadd }}</span></div>
-                    <div class="list-group-item">Przystanki do usunięcia z relacji:   <span class="badge">{{ xd.todelete }}</span></div>
-                    <div class="list-group-item">Przystanki do dodania najpierw do OSM:   <span class="badge">{{ xd.toaddplus }}</span></div>
-        </div>
-    {% endfor %}
+      <h1>{{ xd.lin }}</h1>
+                <div class="row">
+            <div class="col-md-6">
+                        <h2> Operator</h2>
+        {%  for p in xd.operator_data %}
+            {% for p2 in p %}
+                <h3> <a href="/stop/{{ p2.ref }}">{{ p2.ref }} {{ p2.name_operator }}</a></h3>
+                {% endfor %}
+            <h3>---</h3>
+        {%  endfor %}
+    </div>
+                            <div class="col-md-6">
+                        <h2>OSM</h2>
+    </div>
     </div>
     </div>
   </body>
