@@ -19,6 +19,27 @@
 
     <div class="container">
       <h1>{{ xd.stop }}</h1>
+        {% for k in xd.sasiedzi %}
+            <p>
+                <a href="/line/{{ k.line }}">{{ k.line }}</a> :
+                {% for k2 in k.data %}
+                    {% if k2.real == 0 %}
+                        {% if k2.stop_id == xd.stop %}
+                              {{ k2.name }}
+                            {% else %}
+                              <a href="/stop/{{ k2.stop_id }}">{{ k2.name }} ({{ k2.stop_id }})</a>
+                            {% endif %}
+
+                    {% endif %}
+                    {% if k2.real == 1 %}
+                      >
+                    {% endif %}
+                    {% if k2.real == 2 %}
+                      > ... >
+                    {% endif %}
+                {% endfor %}
+            </p>
+        {% endfor %}
     </div>
   </body>
 </html>

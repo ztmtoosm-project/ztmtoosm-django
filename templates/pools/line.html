@@ -24,7 +24,12 @@
                         <h2> Operator</h2>
         {%  for p in xd.operator_data %}
             {% for p2 in p %}
-                <h3> <a href="/stop/{{ p2.ref }}">{{ p2.ref }} {{ p2.name_operator }}</a></h3>
+
+                <h3> <a href="/stop/{{ p2.ref }}">{{ p2.ref }} {{ p2.name_operator }}
+                {% if not p2.stop_position %}
+                    !!!!
+                {% endif %}
+                </a></h3>
                 {% endfor %}
             <h3>---</h3>
         {%  endfor %}

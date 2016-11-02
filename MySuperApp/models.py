@@ -77,3 +77,15 @@ class SpecialModel(models.Model):
     class Meta:
         managed = False
         db_table = 'good_stops'
+
+class RoutesConnectedWithStopModel(models.Model):
+    route_id = models.IntegerField(db_column='route_id')
+    direction = models.IntegerField(db_column='direction')
+    stop_on_direction_number = models.IntegerField(db_column='stop_on_direction_number', primary_key=True)
+    stop_id = models.CharField(db_column='stop_id', max_length=20)
+    req_id = models.CharField(db_column='req_id', max_length=20)
+    name = models.CharField(db_column='name', max_length=255)
+    class Meta:
+        unique_together = (("route_id", "direction", "stop_on_direction_number"),)
+        managed = False
+        db_table = 'ztmtoosm_routes_connected_with_stop'
