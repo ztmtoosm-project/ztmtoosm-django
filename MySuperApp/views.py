@@ -9,10 +9,22 @@ import functools
 import re
 
 class waw_settings:
+    def get_type(line):
+        if(re.search("^(\d){1,2}$", line)):
+            return "T"
+        return "B"
     def get_type_small(line):
-        return "bus"
+        k = waw_settings.get_type(line)
+        if(k=="T"):
+            return "tram"
+        else:
+            return "bus"
     def get_type_large(line):
-        return "Bus"
+        k = waw_settings.get_type(line)
+        if(k=="T"):
+            return "Tram"
+        else:
+            return "Bus"
     def handle_endstop_name(name):
         #rr = re.compile("(?P<lol>([\W\)\(]+\s*)*)\s*\d*")
         #print (re.match(rr, name).group("lol"))
@@ -228,6 +240,8 @@ def view3a(request, id):
     gs5 = good_stops5(id)
     if gs5 is None:
         return HttpResponse(status=404)
+    data['type_small'] = waw_settings.get_type_small(id)
+    data['type_large'] = waw_settings.get_type_large(id)
     data['parent'] = [3651336]
     data['line'] = id
     data['stops'] = [[y for y in x] for x in gs5]

@@ -3,5 +3,11 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-    url(r'^$', views.index, name='index'),
+    url(r'^line/(\S+)/$', views.view3),
+    url(r'^apiline2/(\S+)/$', views.view3a),
+    url(r'^apiline2/$', views.view3b),
+    url(r'^stop/(\S+)/$', views.view4),
+    url(r'^lst/$', views.view5),
+    url(r'^$', views.index),
+    url(r'^apiline/(\S+)/$', views.view2)
 ]
