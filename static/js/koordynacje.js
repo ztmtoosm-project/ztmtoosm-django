@@ -55,7 +55,7 @@ $( document ).ready(function() {
 
             var tablen = data[0].length;
             var ttt2 = "";
-            for(var i=3; i<tablen; i+=20)
+            for(var i=2; i<tablen; i+=20)
             {
                 var ttt = "<table class='table-bordered'>";
                 for(var z in data)

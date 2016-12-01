@@ -21,12 +21,13 @@ def index2(request):
     return HttpResponse(json.dumps(q3, ensure_ascii=False), content_type="application/json; encoding=utf-8")
 
 def index3(request, lin):
-    q = LineDirections.objects.filter(line=lin).order_by('trip', 'id2')
+    q = ScheduleTmp.objects.raw("SELECT schedule.* FROM schedule, trip_paritition as blah WHERE blah.line = %s AND schedule.trip = blah.trip AND blah.trip = blah.trip_current ORDER BY schedule.trip, schedule.next_stop_trip", [lin])
+    #q = LineDirections.objects.filter(line=lin).order_by('trip', 'id2')
     dtc = dict()
     for x in q:
         if x.trip not in dtc:
             dtc[x.trip] = []
-        dtc[x.trip].append(x.name)
+        dtc[x.trip].append(x.stop_id)
     dtc2 = dict()
     for p in dtc:
         dtc2[p] = dtc[p][0] + " > " + dtc[p][len(dtc[p])-1]
@@ -92,16 +93,48 @@ def get_real_time(tim):
         minutes2 = "0"+minutes2
     return str(hours) + ":" + minutes2
 
+
+@csrf_exempt
+def index4a(request):
+    trip_list_json = json.loads(request.POST['trips'])
+    trip_list_id = [int(x[2]) for x in trip_list_json]
+    trip_list_line_and_id = {(x[0], int(x[2])) for x in trip_list_json}
+    ptt = ScheduleTmp.objects.raw("SELECT schedule.* FROM schedule, trip_paritition as blah WHERE blah.trip IN %s AND schedule.trip = blah.trip AND blah.trip = blah.trip_current ORDER BY schedule.trip, schedule.next_stop_trip", [tuple(trip_list_id)])
+    ptt2 = dict()
+    for z in ptt:
+        if ((z.line, z.trip) in trip_list_line_and_id):
+            if (z.line, z.trip) not in ptt2:
+                ptt2[(z.line, z.trip)] = []
+            ptt2[(z.line, z.trip)].append(z.stop_id)
+    ptt3 = set()
+    print("aaaa")
+    for z in ptt2:
+        for i in range(0, len(ptt2[z])-1):
+            ptt3.add((ptt2[z][i], ptt2[z][i+1]))
+    (ptt4, extras) = dfs_init(ptt3)
+    mxx = []
+    mxx.append(["", "", ""])
+    for ttt in ptt4:
+        mxx.append(["", "", ""])
+    ptt9 = OperatorStops.objects.filter(stop_id__in=[x for x in ptt4])
+    for z in ptt9:
+        mxx[len(mxx)-ptt4[z.stop_id]] = [z.stop_id, z.name, 0]
+        if z.stop_id in extras:
+            mxx[len(mxx)-ptt4[z.stop_id]][2] = 1
+    print(mxx)
+    return HttpResponse(json.dumps(mxx, ensure_ascii=False), content_type="application/json; encoding=utf-8")
+
+
 @csrf_exempt
 def index4(request):
-    kpk = json.loads(request.POST['trips'])
-    kpk2 = [x[0] for x in kpk]
-    kpk3 = {(x[0], int(x[2])) for x in kpk}
-    ptt = OperatorRoutes.objects.filter(route_id__in=kpk2).order_by('route_id', 'direction', 'stop_on_direction_number')
+    trip_list_json = json.loads(request.POST['trips'])
+    trip_list_id = [x[0] for x in trip_list_json]
+    trip_list_line_and_id = {(x[0], int(x[2])) for x in trip_list_json}
+    ptt = OperatorRoutes.objects.filter(route_id__in=trip_list_id).order_by('route_id', 'direction', 'stop_on_direction_number')
     ptt2 = dict()
     consider_stops = set()
     for z in ptt:
-        if ((z.route_id, z.direction) in kpk3):
+        if ((z.route_id, z.direction) in trip_list_line_and_id):
             if (z.route_id, z.direction) not in ptt2:
                 ptt2[(z.route_id, z.direction)] = []
             ptt2[(z.route_id, z.direction)].append(z.stop_id)
@@ -111,7 +144,7 @@ def index4(request):
         for i in range(0, len(ptt2[z])-1):
             ptt3.add((ptt2[z][i], ptt2[z][i+1]))
     krotki = tuple(ptt3)
-    res9 = ScheduleTmp.objects.raw("SELECT * FROM schedule WHERE trip IN (SELECT DISTINCT s1.trip FROM schedule s1, schedule s2 WHERE s1.day_type='DP' AND s1.trip=s2.trip AND s1.next_stop_trip+1 = s2.next_stop_trip+1 AND (s1.stop_id, s2.stop_id) IN %s AND s1.line IN %s)", [krotki, tuple(kpk2)])
+    res9 = ScheduleTmp.objects.raw("SELECT * FROM schedule WHERE trip IN (SELECT DISTINCT s1.trip FROM schedule s1, schedule s2 WHERE s1.day_type='DP' AND s1.trip=s2.trip AND s1.next_stop_trip+1 = s2.next_stop_trip+1 AND (s1.stop_id, s2.stop_id) IN %s AND s1.line IN %s)", [krotki, tuple(trip_list_id)])
     pt = dict()
     pt_bis = dict()
     for alfa in consider_stops:
