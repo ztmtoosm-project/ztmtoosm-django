@@ -53,21 +53,21 @@ $( document ).ready(function() {
         uzup();
         $.post("/koordynacje/api/get_tree/", {"trips" : JSON.stringify(tmpl)}, function(data) {
 
-            var tablen = data[0].length;
+            var tablen = data.tab3[0].length;
             var ttt2 = "";
             for(var i=2; i<tablen; i+=20)
             {
                 var ttt = "<table class='table-bordered'>";
-                for(var z in data)
+                for(var z in data.tab3)
                 {
                     var tttmp = "<tr>";
                     for(var j=0; j<2; j++)
                     {
-                        tttmp += "<td>" + data[z][j] + "</td>";
+                        tttmp += "<td>" + data.tab3[z][j] + "</td>";
                     }
                     for(var j=i; j<(i+20); j++)
                     {
-                        tttmp += "<td>" + data[z][j] + "</td>";
+                        tttmp += "<td>" + data.tab3[z][j] + "</td>";
                     }
                     tttmp += "</tr>"
                     ttt += tttmp;
@@ -75,7 +75,7 @@ $( document ).ready(function() {
                 ttt += "</table>"
                 ttt2 += ttt;
             }
-            $("#lilb").html(ttt2);
+            $("#lilb").html(ttt2 + "</br>" + JSON.stringify(data.tab2));
         });
     });
 });
