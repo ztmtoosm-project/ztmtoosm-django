@@ -29,7 +29,7 @@ SECRET_KEY = 'p#ip8o3y2*&08=r8px%-yys0-6f50%!*#%jrs314e!9_)ki%@v'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['maptools.waw.pl']
+ALLOWED_HOSTS = ['maptools.waw.pl', 'www.maptools.waw.pl']
 
 
 # Application definition

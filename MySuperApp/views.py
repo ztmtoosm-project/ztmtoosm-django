@@ -259,6 +259,7 @@ def view3b(request):
     return HttpResponse(json.dumps(data, ensure_ascii=False), content_type="application/json; encoding=utf-8")
 
 def prepSasiedzi(id):
+    stopName = ""
     abc = RoutesConnectedWithStopModel.objects.filter(req_id=id)
     dtc = dict()
     for x in abc:
@@ -270,6 +271,7 @@ def prepSasiedzi(id):
             dtc[(x.route_id, x.direction)]['max'] = x
         if (x.stop_id==id):
             dtc[(x.route_id, x.direction)]['cur'] = x
+            stopName = x.name
     for x in abc:
         if (dtc[(x.route_id, x.direction)]['cur'].stop_on_direction_number-1 == x.stop_on_direction_number):
             dtc[(x.route_id, x.direction)]['curdown'] = x
@@ -290,13 +292,18 @@ def prepSasiedzi(id):
                 else:
                     k5.append({'real': 2})
         ret.append({'data' : k5, 'line' : k[0]})
-    print(ret)
-    return ret
+    return (ret, stopName)
 
 
 def view4(request, id):
+    q = OperatorStops.objects.filter(stop_id=id)
     data = {}
-    data['sasiedzi'] = prepSasiedzi(id)
+    data['lon'] = 21;
+    data['lat'] = 52;
+    if(len(q) == 1):
+        data['lon'] = q[0].lon
+        data['lat'] = q[0].lat
+    (data['sasiedzi'], data['stop_name']) = prepSasiedzi(id)
     data['stop'] = id
     context = { 'xd' : data}
     template = loader.get_template('pools/stop.html')
