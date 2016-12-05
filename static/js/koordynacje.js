@@ -1,5 +1,7 @@
 var tmpl = [];
 
+
+
 function uzup() {
     var res = "";
     for(var i=0; i<tmpl.length; i++) {

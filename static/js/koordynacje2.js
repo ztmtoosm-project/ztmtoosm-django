@@ -1,11 +1,32 @@
 var tmpl = [];
 
+function createLine(obj, parseObj) {
+    var lineAll = document.createElement("div");
+    $(lineAll).append(parseObj(obj));
+    var exitButton = document.createElement("a");
+    exitButton.href="#";
+    exitButton.innerHTML = "XX";
+    exitButton.style.color="red";
+    $(lineAll).append(exitButton);
+    return lineAll;
+}
+
+function lineTmp(obj) {
+    var xyz = document.createElement("div");
+    var res = "";
+    res = obj[0] + " (" + obj[1] + ") ";
+    $(xyz).html(res);
+    return xyz;
+}
+
 function uzup() {
+    $("#uzup").empty();
     var res = "";
     for(var i=0; i<tmpl.length; i++) {
-        res += tmpl[i][0] + " (" + tmpl[i][1] + ") " + "</br>";
+        $("#uzup").append(createLine(tmpl[i], lineTmp));
+    //    res += tmpl[i][0] + " (" + tmpl[i][1] + ") " + "</br>";
     }
-    $("#uzup").html(res);
+    //$("#uzup").html(res);
 }
 
 function replaceStopSelector(val) {
