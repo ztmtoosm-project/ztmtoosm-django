@@ -295,9 +295,16 @@ def prepSasiedzi(id):
     return (ret, stopName)
 
 
-def view4(request, id):
+def stop_view(request, id):
     q = OperatorStops.objects.filter(stop_id=id)
+    q2 = OperatorStops.objects.raw("SELECT * FROM operator_stops WHERE substring(stop_id, 0, 5) = %s AND stop_id <> %s", [id[:4], id])
+    arry = []
+    for x in q2:
+        arry.append([x.lon, x.lat])
     data = {}
+    data['oth'] = json.dumps(arry, ensure_ascii=False)
+    data['oth2'] = [{'stop_id' : x.stop_id, 'name' : x.name} for x in q2]
+    data['oth2_len'] = len(data['oth2'])
     data['lon'] = 21;
     data['lat'] = 52;
     if(len(q) == 1):

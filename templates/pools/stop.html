@@ -48,6 +48,12 @@
                 {% endfor %}
             </p>
         {% endfor %}
+    {% if xd.oth2_len > 0 %}<h2>Pozostałe przystanki w zespole</h2> {% endif %}
+    <div id="otherstops">
+        {% for k in xd.oth2 %}
+         <a href="/stop/{{ k.stop_id }}">{{ k.name }}</a>
+        {% endfor %}
+    </div>
    <div id="map" class="map"></div>
     <script type="text/javascript">
 var vectorSource = new ol.source.Vector({});
@@ -60,9 +66,18 @@ var vectorSource = new ol.source.Vector({});
         for (i = 0; i < n; ++i) {
           coordinates.push([21+i*0.01, 52.2]);
         }
-        console.log(coordinates);
+       var ar1 = {{xd.oth}};
+        var ar2 = [];
+        for(var x in ar1) {
+            var tmp = ol.proj.transform(ar1[x],  'EPSG:4326', 'EPSG:3857');
+            console.log(ol.proj.transform([{{xd.lon}}, {{xd.lat}}], 'EPSG:4326', 'EPSG:3857'));
+            vectorSource.addFeature(new ol.Feature({geometry: new ol.geom.Point(tmp)}));
+        }
+        console.log(ar2);
        vectorSource.addFeature(new ol.Feature({geometry: new ol.geom.Point( ol.proj.transform([{{xd.lon}}, {{xd.lat}}], 'EPSG:4326', 'EPSG:3857'))}));
-      var map = new ol.Map({
+       //vectorSource.addFeature(new ol.Feature({geometry: new ol.geom.MultiPoint(ar2, 'EPSG:4326', 'EPSG:3857')}));
+
+        var map = new ol.Map({
         target: 'map',
         layers: [
           new ol.layer.Tile({
