@@ -54,4 +54,5 @@ class ScheduleTmp(models.Model):
     direction = models.CharField(db_column='direction', max_length=20)
     class Meta:
         managed = False
+        db_table = 'schedule'
         unique_together = (('trip', 'next_stop_trip'),)
